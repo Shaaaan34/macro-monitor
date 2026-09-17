@@ -1,0 +1,7 @@
+pandas>=2.2
+requests>=2.31
+PyYAML>=6.0
+yfinance>=0.2.40
+pandas_market_calendars>=4.4
+python-dotenv>=1.0
+pytest>=8.0

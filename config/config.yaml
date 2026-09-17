@@ -1,0 +1,94 @@
+# Macro monitor configuration. Edit thresholds/tickers here; no code changes needed.
+
+meta:
+  # Header always shows New York time (market time). Set a second timezone here
+  # if you ever want the header to show a non-ET local time too; same value = ET only.
+  local_timezone: America/New_York
+  title: "Daily Pre-Market Macro Monitor"
+
+# --- yfinance tickers (no key required) ---
+tickers:
+  vix: "^VIX"
+  wti: "CL=F"
+  brent: "BZ=F"
+  sp500: "^GSPC"
+  sp500_futures: "ES=F"
+  nasdaq100: "^NDX"
+  nasdaq_composite: "^IXIC"
+  nasdaq_futures: "NQ=F"
+  dxy: "DX-Y.NYB"
+  baltic_dry_proxy: "BDRY"   # ETF proxy — no free official Baltic Dry Index API
+
+# --- FRED series IDs (require FRED_API_KEY) ---
+# Verified to exist on fred.stlouisfed.org before being added here (2026-09-15).
+fred_series:
+  vix_fallback: VIXCLS
+  wti_fallback: DCOILWTICO
+  brent_fallback: DCOILBRENTEU
+  cpi_headline: CPIAUCSL
+  cpi_core: CPILFESL
+  hy_oas: BAMLH0A0HYM2          # ICE BofA US High Yield OAS
+  ig_oas: BAMLC0A0CM            # ICE BofA US Corporate (IG) OAS, context only
+  dgs10: DGS10                  # 10Y Treasury yield, daily
+  philly_fed: GACDFSA066MSFRBPHI   # Philly Fed current general activity, SA — PMI proxy
+  empire_state: GACDISA066MSFRBNY  # Empire State current general business conditions, SA — PMI proxy
+
+# --- Status thresholds. Each has a rationale comment; edit freely. ---
+thresholds:
+  vix:
+    green_below: 15      # historically "calm" regime
+    red_above: 25         # >25 has historically coincided with acute stress episodes
+    rationale: "VIX <15 calm / 15-25 elevated / >25 stressed (standard vol regime bands)"
+
+  hy_oas_pct:
+    green_below: 4.0
+    red_above: 6.0
+    rationale: "HY OAS <4% calm credit / 4-6% elevated / >6% has historically preceded or coincided with credit stress"
+
+  ig_oas_pct:
+    green_below: 1.5
+    red_above: 2.5
+    rationale: "IG OAS context band — <1.5% tight / 1.5-2.5% normal-to-wide / >2.5% stressed. Shown for context only, not scored standalone."
+
+  cpi_yoy_pct:
+    green_below: 2.5
+    red_above: 4.0
+    rationale: "Fed target is 2%; <2.5% near-target, 2.5-4% elevated, >4% clearly above target"
+
+  curve_10y2y_bp:
+    red_below: 0            # inverted curve
+    rationale: "10Y-2Y spread below 0 (inverted) flagged amber; historically a recession-risk signal with long, variable lead time"
+
+  oil_1m_change_pct:
+    amber_abs: 10
+    red_abs: 20
+    rationale: "1-month WTI/Brent move: within +-10% calm, 10-20% elevated (supply/demand shift), >20% shock-level (historically associated with growth/inflation risk)"
+
+  equity_futures_move_pct:
+    amber_abs: 0.5
+    red_abs: 1.5
+    rationale: "Overnight S&P/Nasdaq futures move: within +-0.5% calm, 0.5-1.5% notable, >1.5% large pre-market move"
+
+  dxy_1m_change_pct:
+    amber_abs: 3
+    red_abs: 6
+    rationale: "1-month DXY move: within +-3% calm, 3-6% notable tightening/loosening of financial conditions via FX, >6% large"
+
+  baltic_dry_1m_change_pct:
+    amber_abs: 15
+    red_abs: 30
+    rationale: "1-month BDRY proxy move: within +-15% calm, 15-30% notable shift in global trade/shipping demand, >30% large"
+
+  dgs10_1m_change_bp:
+    amber_abs: 50
+    red_abs: 100
+    rationale: "1-month 10Y yield move: within +-50bp calm, 50-100bp notable repricing, >100bp large / historically stress-level rate moves"
+
+  pmi_proxy:
+    green_above: 0        # Philly Fed / Empire State diffusion index >0 = expansion-leaning
+    red_below: -10
+    rationale: "Regional Fed diffusion index >0 expansion-leaning / <0 contraction-leaning / <-10 sharply contractionary. PROXY for ISM PMI, not a direct substitute — label clearly."
+
+history:
+  # Long-format CSV: date, indicator, value, as_of, source, is_stale
+  path: data/history.csv
